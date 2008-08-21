@@ -1,0 +1,7 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+t/Log-Facile.t
+lib/Log/Facile.pm
+META.yml                                 Module meta-data (added by MakeMaker)
