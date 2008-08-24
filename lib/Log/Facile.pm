@@ -2,13 +2,13 @@ package Log::Facile;
 
 use strict;
 use vars qw($VERSION);
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use Carp;
 
 use base qw( Class::Accessor::Fast );
 __PACKAGE__->mk_accessors(
-    qw( file )
+    qw( file debug_flag )
 );
 
 sub new {
@@ -30,7 +30,9 @@ sub _write {
 
 sub debug {
     my ($self, $mes) = @_;
-    return $self->_write("DEBUG", $mes);
+    if ( $self->get('debug_flag') ) {
+        return $self->_write("DEBUG", $mes);
+    }
 }
 
 sub info {
@@ -64,10 +66,20 @@ Log::Facile - Perl extension for facile logging
 =head1 SYNOPSIS
 
   use Log::Facile;
+
   my $logger = Log::Facile->new("tmp.log");
   $logger->info('Log::Facile instance created!');
-  $logger->debug('some debugging');
+  $logger->debug('flag off');
   $logger->error('error occurred! detail.......');
+
+  $logger->set('debug_flag', 1);
+  $logger->debug('flag on');
+
+This sample puts following logging.
+
+  2008/08/25 01:01:49 [INFO] Log::Facile instance created!
+  2008/08/25 01:01:49 [ERROR] error occurred! detail.......
+  2008/08/25 01:01:49 [DEBUG] flag on
 
 =head1 DESCRIPTION
 
