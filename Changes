@@ -11,3 +11,9 @@ Revision history for Perl extension Log::Facile.
 	- remove dependency Class::Accessor::Fast
         - add log swapping implementation
 
+0.04  Sat Nov 29 22:33:57 2008
+	- accessors field define checker implementation
+	- add date format configure implementation
+	- add log level string configure implementation
+	- add methods $l->fatal(), $l->warn()
+
