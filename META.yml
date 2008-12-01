@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Log-Facile
-version:             0.04
+version:             0.05
 abstract:            Perl extension for facile logging
 license:             perl
 author:              

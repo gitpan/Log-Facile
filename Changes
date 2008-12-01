@@ -17,3 +17,6 @@ Revision history for Perl extension Log::Facile.
 	- add log level string configure implementation
 	- add methods $l->fatal(), $l->warn()
 
+0.05  Mon Dec 2 01:19:23 2008
+	- bug fix in $self->swap($swap_dir);
+

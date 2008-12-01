@@ -2,7 +2,7 @@ package Log::Facile;
 
 use strict;
 use vars qw($VERSION);
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use Carp;
 
@@ -114,6 +114,15 @@ sub fatal {
 
 sub swap {
     my ($self, $swap_dir) = @_;
+
+    # set swap dir
+    if ( defined $swap_dir ) {
+        $self->set('swap_dir', $swap_dir);
+    } elsif ( ! defined $self->get('swap_dir') ) {
+        my $log_dir = $self->{log_file};
+        $log_dir =~ s/(.+\/).+$/$1/;
+        $self->set('swap_dir', $log_dir);
+    }
 
     # get log filename prefix
     my $file_pref = $self->{log_file};

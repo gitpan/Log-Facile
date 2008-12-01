@@ -66,7 +66,7 @@ while (<$io>) {
 }
 
 ok $logger->info("second swapped");
-ok $logger->swap();
+ok $logger->swap($swap_dir);
 
 my $regexp_ar_sw2 = [ 
     '\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} \[INFO\] second swapped',
