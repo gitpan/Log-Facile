@@ -20,3 +20,6 @@ Revision history for Perl extension Log::Facile.
 0.05  Mon Dec 2 01:19:23 2008
 	- bug fix in $self->swap($swap_dir);
 
+0.06  Wed Dec 3 03:00:37 JST 2008
+	- add more tests
+

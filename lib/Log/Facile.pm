@@ -2,7 +2,7 @@ package Log::Facile;
 
 use strict;
 use vars qw($VERSION);
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use Carp;
 
