@@ -2,10 +2,18 @@ package Log::Facile;
 
 use strict;
 use vars qw($VERSION);
-our $VERSION = '0.06';
+our $VERSION = '1.00';
 
 use Carp;
 
+# log template config
+my $tmpl_hash_key = 'template';
+my @tmpl_accessor = ( 'TEMPLATE',
+                      'DATE',
+                      'LEVEL', 
+                      'MESSAGE', );
+
+# available accessor list
 my @accessor = ( 'log_file',
                  'level_debug',
                  'level_info',
@@ -14,56 +22,154 @@ my @accessor = ( 'log_file',
                  'level_fatal',
                  'swap_dir',
                  'date_format',
-                 'debug_flag', );
+                 'debug_flag',
+                 $tmpl_hash_key, );
 
+# constructor
 sub new {
     my ($class, $log_file, $swap_dir) = @_;
+
     bless { 
         log_file => $log_file,
         swap_dir => $swap_dir, 
+        date_format => 'yyyy/mm/dd hh:mi:ss',
+        $tmpl_hash_key => { 'TEMPLATE' => 'DATE [LEVEL] MESSAGE',
+                            'DATE' => undef,
+                            'LEVEL' => undef,
+                            'MESSAGE' => undef, },
     }, $class;
 }
 
+# getter
 sub get {
-    my ($self, $name) = @_;
-    if ( _is_valid_accessor($name) ) {
+    my ($self, $name, $tmpl_key ) = @_;
+
+    # log template value
+    if ( _is_tmpl_accessor($name, $tmpl_key) == 1 ) {
+        return $self->{$tmpl_hash_key}->{$tmpl_key};
+    # new template value
+    } elsif ( _is_tmpl_accessor($name, $tmpl_key) == 2 ) {
+        return $self->{$tmpl_hash_key};
+    # get field
+    } elsif ( _is_valid_accessor($name) ) {
         return $self->{$name};
+    # error
     } else {
-        croak 'invalid field name :-P - '.$name;
         return 0;
     }
 }
 
+# setter
 sub set {
-    my ($self, $name, $value) = @_;
-    if ( _is_valid_accessor($name) ) {
-        $self->{$name} = $value;
-        return $self;
+    my ($self, $name, $value_or_key, $tmpl_value) = @_;
+
+    if ( _is_tmpl_accessor($name, $value_or_key) == 1 ) {
+        $self->{$tmpl_hash_key}->{$value_or_key} = $tmpl_value;
+    } elsif ( _is_tmpl_accessor($name, $value_or_key) == 2 ) {
+        push @tmpl_accessor, $value_or_key;
+        $self->{$tmpl_hash_key}->{$value_or_key} = $tmpl_value;
+    } elsif ( _is_tmpl_accessor($name, $value_or_key) == 255 ) {
+        return 0;
+    } elsif ( _is_valid_accessor($name) ) {
+        $self->{$name} = $value_or_key;
     } else {
-        croak 'invalid field name :-P - '.$name;
         return 0;
     }
+    return $self;
 }
 
-sub _is_valid_accessor {
-    my $name = shift;
+# tmpl accessor check
+sub _is_tmpl_accessor {
+    my ($name, $key) = @_;
+
     my $enable = 0;
-    for my $each (@accessor) {
-       if ($each eq $name) {
-           $enable = 1; last;
-       }
+    if ( defined $name && $name eq $tmpl_hash_key ) {
+        $enable = 2;
+        for my $each (@tmpl_accessor) {
+            if ( defined $key && $each eq $key ) {
+                $enable = 1; last;
+            } elsif ( defined $key 
+                      && ( $each =~ m/$key/ || $key =~ m/$each/ ) ) {
+                croak "Can't use '".$key."' to template "
+                      ."because '".$each."' has already used.";
+                $enable = 255;
+            }
+        }
     }
     return $enable;
 }
 
-sub _write {
-    my($self, $level, $message) = @_;
-    my $date = $self->_current_date();
-    my $log_mes = $date.' ['.$level.'] '.$message."\n";
+# accessor check
+sub _is_valid_accessor {
+    my $name = shift;
 
+    my $enable = 0;
+    for my $each (@accessor) {
+       if ( defined $name && $name eq $each ) {
+           $enable = 1; last;
+       }
+    }
+    croak 'invalid field name :-P - '.$name if ! $enable;
+    return $enable;
+}
+
+sub _get_log_value {
+    my ($self, $key, $value) = @_;
+
+    # get defined object
+    if ( defined $key 
+         && _is_tmpl_accessor($tmpl_hash_key, $key) == 1
+         && defined $self->get($tmpl_hash_key)->{$key} ) {
+        return $self->get($tmpl_hash_key)->{$key};
+    # get date default sub
+    } elsif ( defined $key 
+         && $key eq 'DATE'
+         && ! defined $self->get($tmpl_hash_key)->{'DATE'} ) {
+        return $self->_current_date();
+    # return accepted value
+    } else {
+        return $value;
+    }
+}
+
+# get log output string
+sub _get_log_str {
+    my ($self, $date, $level, $message) = @_;
+
+    # template hash
+    my $t_hash = $self->get($tmpl_hash_key);
+    # log template string
+    my $log_str = $t_hash->{'TEMPLATE'};
+
+    # default values
+    $log_str =~ s/DATE/$date/g;
+    $log_str =~ s/LEVEL/$level/g;
+    $log_str =~ s/MESSAGE/$message/g;
+
+    # user defined values
+    for my $key (@tmpl_accessor) {
+        my $replace = $self->_get_log_value($key);
+        $log_str =~ s/$key/$replace/g;
+    }
+    return $log_str;
+}
+
+# log writer
+sub _write {
+    my ($self, $p_level, $p_message) = @_;
+
+    # default values
+    my $date = $self->_get_log_value('DATE');
+    my $level = $self->_get_log_value('LEVEL', $p_level);
+    my $message = $self->_get_log_value('MESSAGE', $p_message);
+
+    # log string
+    my $log_str = $self->_get_log_str($date,$level,$message).$/;
+
+    # execute writing log file
     open my $log, ">> ".$self->get('log_file') 
         or croak 'log file open error - '.$!;
-    print $log $log_mes;
+    print $log $log_str;
     close $log 
         or croak 'log file close error - '.$!;
 }
@@ -119,28 +225,35 @@ sub swap {
     if ( defined $swap_dir ) {
         $self->set('swap_dir', $swap_dir);
     } elsif ( ! defined $self->get('swap_dir') ) {
-        my $log_dir = $self->{log_file};
+        my $log_dir = $self->get('log_file');
         $log_dir =~ s/(.+\/).+$/$1/;
         $self->set('swap_dir', $log_dir);
     }
 
     # get log filename prefix
-    my $file_pref = $self->{log_file};
+    my $file_pref = $self->get('log_file');
     $file_pref =~ s/.+\/(.+?)$/$1/;
 
     # move current log file
-    if ( -f $self->{log_file} ) { 
-        rename $self->{log_file}, $self->{swap_dir}.'/'.$file_pref 
+    if ( ! -d $self->get('swap_dir') ) {
+        mkdir $self->get('swap_dir')
+            or croak 'create swap dir error - '.$!;
+    }
+    if ( -f $self->get('log_file') ) { 
+        rename $self->get('log_file'), 
+            $self->get('swap_dir').'/'.$file_pref 
             or croak 'current file move error - '.$!;
     } else {
         return 1;
     }
 
     # rename files
-    opendir my $s_dir, $self->{swap_dir} or croak 'dir open error - '.$!;
+    opendir my $s_dir, $self->get('swap_dir') 
+        or croak 'dir open error - '.$!;
+
     for my $each (grep /$file_pref/, reverse sort readdir $s_dir) {
-        $each = $self->{swap_dir}.'/'.$each;
-        my $rename_pref = $self->{swap_dir}.'/'.$file_pref.'.';
+        $each = $self->get('swap_dir').'/'.$each;
+        my $rename_pref = $self->get('swap_dir').'/'.$file_pref.'.';
         if ($each =~ /\.(\d)$/) {
             rename $each, $rename_pref.($1+1) 
                 or croak 'rename error ('.$rename_pref.($1+1).') - '.$!;
@@ -149,12 +262,15 @@ sub swap {
                 or croak 'rename error ('.$rename_pref.'.1) - '.$!;
         }
     }
-    closedir $s_dir or croak 'dir close error - '.$!;
+    closedir $s_dir 
+        or croak 'dir close error - '.$!;
 }
 
+# get current datetime
 sub _current_date {
     my($self, $pat) = @_;
 
+    # datetime values
     my @da = localtime(time);
     my $year4 = sprintf("%04d", $da[5]+1900);
     my $year2 = sprintf("%02d", $da[5]+1900-2000);
@@ -164,19 +280,21 @@ sub _current_date {
     my $min   = sprintf("%02d", $da[1]);
     my $sec   = sprintf("%02d", $da[0]);
 
-    my $format = (defined $self->get('date_format'))
+    # date format
+    my $date_str = (defined $self->get('date_format'))
                      ? $self->get('date_format') 
                      : 'yyyy/mm/dd hh:mi:ss';
 
-    $format =~ s/yyyy/$year4/g;
-    $format =~ s/yy/$year2/g;
-    $format =~ s/mm/$month/g;
-    $format =~ s/dd/$day/g;
-    $format =~ s/hh/$hour/g;
-    $format =~ s/mi/$min/g;
-    $format =~ s/ss/$sec/g;
+    # replace format values
+    $date_str =~ s/yyyy/$year4/g;
+    $date_str =~ s/yy/$year2/g;
+    $date_str =~ s/mm/$month/g;
+    $date_str =~ s/dd/$day/g;
+    $date_str =~ s/hh/$hour/g;
+    $date_str =~ s/mi/$min/g;
+    $date_str =~ s/ss/$sec/g;
 
-    return $format;
+    return $date_str;
 }
 
 1;
@@ -248,6 +366,24 @@ Outputs followings.
   2008/11/30 04:28:51 [INF] Log::Facile instance created!
   2008/11/30 04:28:51 [DBG] flag off
   2008/11/30 04:28:51 [ERR] error occurred! detail.......
+
+The default log template is
+
+  'TEMPLATE' => 'DATE [LEVEL] MESSAGE',
+
+'DATE', 'LEVEL', 'MESSAGE' is default log items. It is able to add more items. 
+
+You can modify the log template like this.
+
+  $logger->set('date_format', 'dd/mm/yy hh:mi:ss');
+  $logger->set('template', 'HOSTNAME', $hostname);
+  $logger->set('template', 'TEMPLATE', 'HOSTNAME - DATE (LEVEL) MESSAGE');
+
+  $logger->info('template changed.');
+
+Outputs followings.
+
+  localhost - 07/12/08 01:40:11 (INFO) template changed.
 
 Aside, the accessors in this module checks your typo. 
   

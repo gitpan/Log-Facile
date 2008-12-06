@@ -6,6 +6,7 @@ use Log::Facile;
 ok chdir $ENV{HOME};
 
 my $log_file = './Log-Facile-write.test.tmp.log';
+ok unlink $log_file or croak $! if -f $log_file;
 ok my $logger = Log::Facile->new($log_file);
 
 ok $logger->debug('debug off');
@@ -45,10 +46,10 @@ ok open my $io, $log_file or warn 'file open error - '.$!;
 my $i = 0;
 while (<$io>) {
    my $regexp = ${$regexp_array}[$i];
-   ok $_ =~ /$regexp/, 'output ok';
+   ok $_ =~ /$regexp/, 'output - |'.$regexp.'|'.$_.'|';
    $i++;
 }
+ok close $io or warn 'file close error - '.$!;
 
-unlink $log_file or croak $!;
-
+ok unlink $log_file or croak $! if -f $log_file;
 __END__

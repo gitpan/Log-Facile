@@ -6,6 +6,7 @@ use Log::Facile;
 ok chdir $ENV{HOME};
 
 my $log_file = './Log-Facile-swap.test.tmp.log';
+ok unlink $log_file or warn 'file delete error - '.$! if -f $log_file;
 ok my $logger = Log::Facile->new($log_file);
 
 ok $logger->info("info");
@@ -26,9 +27,10 @@ ok open my $io, $swap1 or warn 'file open error - '.$!;
 my $i = 0;
 while (<$io>) {
    my $regexp = ${$regexp_array}[$i];
-   ok $_ =~ /$regexp/, 'output ok';
+   ok $_ =~ /$regexp/, 'output - |'.$regexp.'|'.$_.'|';
    $i++;
 }
+ok close $io or warn 'file close error - '.$!;
 
 ok $logger->info('second swapped');
 ok $logger->swap($swap_dir);
@@ -48,19 +50,21 @@ ok open $io, $swap2 or warn 'file open error - '.$!;
 $i = 0;
 while (<$io>) {
    my $regexp = ${$regexp_array}[$i];
-   ok $_ =~ /$regexp/, 'output ok';
+   ok $_ =~ /$regexp/, 'output - |'.$regexp.'|'.$_.'|';
    $i++;
 }
+ok close $io or warn 'file close error - '.$!;
 
-unlink $swap1 or warn 'file delete error - '.$!;
-unlink $swap2 or warn 'file delete error - '.$!;
+ok unlink $swap1 or warn 'file delete error - '.$! if -f $swap1;
+ok unlink $swap2 or warn 'file delete error - '.$! if -f $swap2;
 
 ok $logger->info('third swapped');
 ok $logger->swap();
-unlink $swap1 or warn 'file delete error - '.$!;
+ok unlink $swap1 or warn 'file delete error - '.$!;
 
 ok $logger->swap();
 
-rmdir $swap_dir or warn 'rmdir error - '.$!;
-
+ok unlink $swap1 or warn 'file delete error - '.$! if -f $swap1;
+ok unlink $swap2 or warn 'file delete error - '.$! if -f $swap2;
+ok rmdir $swap_dir or warn 'rmdir error - '.$!;
 __END__
