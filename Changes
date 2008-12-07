@@ -27,3 +27,7 @@ Revision history for Perl extension Log::Facile.
 	- add customize log format implementation
 	- add more tests
 
+1.01  Sun Dec  7 09:35:51 JST 2008
+	- edit pod
+	- add comments
+

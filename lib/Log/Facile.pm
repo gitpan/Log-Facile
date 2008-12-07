@@ -2,7 +2,7 @@ package Log::Facile;
 
 use strict;
 use vars qw($VERSION);
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 
 use Carp;
 
@@ -113,7 +113,8 @@ sub _is_valid_accessor {
     return $enable;
 }
 
-sub _get_log_value {
+# replace log item
+sub _replace_log_item {
     my ($self, $key, $value) = @_;
 
     # get defined object
@@ -148,7 +149,7 @@ sub _get_log_str {
 
     # user defined values
     for my $key (@tmpl_accessor) {
-        my $replace = $self->_get_log_value($key);
+        my $replace = $self->_replace_log_item($key);
         $log_str =~ s/$key/$replace/g;
     }
     return $log_str;
@@ -159,9 +160,9 @@ sub _write {
     my ($self, $p_level, $p_message) = @_;
 
     # default values
-    my $date = $self->_get_log_value('DATE');
-    my $level = $self->_get_log_value('LEVEL', $p_level);
-    my $message = $self->_get_log_value('MESSAGE', $p_message);
+    my $date = $self->_replace_log_item('DATE');
+    my $level = $self->_replace_log_item('LEVEL', $p_level);
+    my $message = $self->_replace_log_item('MESSAGE', $p_message);
 
     # log string
     my $log_str = $self->_get_log_str($date,$level,$message).$/;
@@ -371,7 +372,7 @@ The default log template is
 
   'TEMPLATE' => 'DATE [LEVEL] MESSAGE',
 
-'DATE', 'LEVEL', 'MESSAGE' is default log items. It is able to add more items. 
+The defauilt log items are 'DATE', 'LEVEL' and 'MESSAGE'. It is able to edit default ones or add more items. 
 
 You can modify the log template like this.
 
