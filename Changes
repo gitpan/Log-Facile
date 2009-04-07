@@ -31,3 +31,9 @@ Revision history for Perl extension Log::Facile.
 	- edit pod
 	- add comments
 
+1.02  Wed Apr  8 01:13:53 JST 2009
+	- getter bug fix (delete no need pattern)
+	- gnu coding style with 'perltidy -gnu'
+	- pod edit (Methods)
+	- test module bug fix (Log-Facile-swap-fail-001.t)
+

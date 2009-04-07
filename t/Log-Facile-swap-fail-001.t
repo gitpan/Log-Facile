@@ -9,7 +9,7 @@ my $log_file = './Log-Facile-swap.test.tmp.log';
 ok unlink $log_file or warn 'file delete error - '.$! if -f $log_file;
 ok my $logger = Log::Facile->new($log_file);
 
-my $swap_dir = '/Log-Facile-test-dummy';
+my $swap_dir = '/dummy/Log-Facile-test-dummy';
 ok $logger->set('swap_dir', $swap_dir);
 eval { $logger->swap(); };
 like $@, qr/create swap dir error/, 'fail - '.$@;

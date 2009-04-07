@@ -1,4 +1,4 @@
-Log-Facile version 0.01
+Log-Facile version 1.02
 =======================
 
 The README is used to introduce the module and provide instructions on
@@ -23,15 +23,11 @@ To install this module type the following:
 
 DEPENDENCIES
 
-This module requires these other modules and libraries:
-
-  blah blah blah
+None
 
 COPYRIGHT AND LICENCE
 
-Put the correct copyright and licence information here.
-
-Copyright (C) 2008 by A. U. Thor
+Copyright (C) 2008-2009 by Kazuhiro Sera
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.8 or,
