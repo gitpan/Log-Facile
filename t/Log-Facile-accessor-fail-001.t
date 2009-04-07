@@ -13,13 +13,13 @@ eval { $logger->set('dummy', 1); };
 like $@, qr/invalid field name :-P - dummy/, 'fail - '.$@;
 eval { $logger->get('dummy'); };
 like $@, qr/invalid field name :-P - dummy/, 'fail - '.$@;
-eval { $logger->set('template', 'DA', 'dummy'); };
+eval { $logger->set($Log::Facile::TEMPLATE, 'DA', 'dummy'); };
 like $@, qr/Can't use 'DA' to template because 'DATE' has already used/, 'fail - '.$@;
-eval { $logger->set('template', 'DATE_FORMAT', 'dummy'); };
+eval { $logger->set($Log::Facile::TEMPLATE, 'DATE_FORMAT', 'dummy'); };
 like $@, qr/Can't use 'DATE_FORMAT' to template because 'DATE' has already used/, 'fail - '.$@;
-eval { $logger->get('template', 'DA'); };
+eval { $logger->get($Log::Facile::TEMPLATE, 'DA'); };
 like $@, qr/Can't use 'DA' to template because 'DATE' has already used/, 'fail - '.$@;
-eval { $logger->get('template', 'DATE_FORMAT'); };
+eval { $logger->get($Log::Facile::TEMPLATE, 'DATE_FORMAT'); };
 like $@, qr/Can't use 'DATE_FORMAT' to template because 'DATE' has already used/, 'fail - '.$@;
 
 ok unlink $log_file or croak $! if -f $log_file;

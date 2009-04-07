@@ -1,20 +1,21 @@
 package Log::Facile;
 
 use strict;
-use vars qw($VERSION);
-our $VERSION = '1.02';
+
+use vars qw($VERSION $TEMPLATE);
+our $VERSION = '1.03';
+our $TEMPLATE = 'template';
 
 use Carp;
 
 # log template config
-my $tmpl_hash_key = 'template';
 my @tmpl_accessor = ('TEMPLATE', 'DATE', 'LEVEL', 'MESSAGE',);
 
 # available accessor list
 my @accessor = (
                 'log_file',   'level_debug', 'level_info', 'level_error',
                 'level_warn', 'level_fatal', 'swap_dir',   'date_format',
-                'debug_flag', $tmpl_hash_key,
+                'debug_flag', $TEMPLATE,
                );
 
 # constructor
@@ -26,7 +27,7 @@ sub new
            log_file       => $log_file,
            swap_dir       => $swap_dir,
            date_format    => 'yyyy/mm/dd hh:mi:ss',
-           $tmpl_hash_key => {
+           $TEMPLATE => {
                               'TEMPLATE' => 'DATE [LEVEL] MESSAGE',
                               'DATE'     => undef,
                               'LEVEL'    => undef,
@@ -43,12 +44,12 @@ sub get
     if (_is_tmpl_accessor($key, $tmpl_key) == 1)
     {
         # log template value
-        return $self->{$tmpl_hash_key}->{$tmpl_key};
+        return $self->{$TEMPLATE}->{$tmpl_key};
     }
     elsif (_is_tmpl_accessor($key, $tmpl_key) == 2)
     {
         # new template value
-        return $self->{$tmpl_hash_key};
+        return $self->{$TEMPLATE};
     }
     elsif (_is_valid_accessor($key))
     {
@@ -69,12 +70,12 @@ sub set
 
     if (_is_tmpl_accessor($key, $value_or_key) == 1)
     {
-        $self->{$tmpl_hash_key}->{$value_or_key} = $tmpl_value;
+        $self->{$TEMPLATE}->{$value_or_key} = $tmpl_value;
     }
     elsif (_is_tmpl_accessor($key, $value_or_key) == 2)
     {
         push @tmpl_accessor, $value_or_key;
-        $self->{$tmpl_hash_key}->{$value_or_key} = $tmpl_value;
+        $self->{$TEMPLATE}->{$value_or_key} = $tmpl_value;
     }
     elsif (_is_tmpl_accessor($key, $value_or_key) == 255)
     {
@@ -97,7 +98,7 @@ sub _is_tmpl_accessor
     my ($tmpl_key, $key) = @_;
 
     my $enable = 0;
-    if (defined $tmpl_key && $tmpl_key eq $tmpl_hash_key)
+    if (defined $tmpl_key && $tmpl_key eq $TEMPLATE)
     {
         $enable = 2;
         for my $each (@tmpl_accessor)
@@ -148,14 +149,14 @@ sub _replace_log_item
 
     # get defined object
     if ( defined $key
-        && _is_tmpl_accessor($tmpl_hash_key, $key) == 1
-        && defined $self->get($tmpl_hash_key)->{$key})
+        && _is_tmpl_accessor($TEMPLATE, $key) == 1
+        && defined $self->get($TEMPLATE)->{$key})
     {
-        return $self->get($tmpl_hash_key)->{$key};
+        return $self->get($TEMPLATE)->{$key};
     }
     elsif (   defined $key
            && $key eq 'DATE'
-           && !defined $self->get($tmpl_hash_key)->{'DATE'})
+           && !defined $self->get($TEMPLATE)->{'DATE'})
     {
 
         # get date default sub
@@ -175,7 +176,7 @@ sub _get_log_str
     my ($self, $date, $level, $message) = @_;
 
     # template hash
-    my $t_hash = $self->get($tmpl_hash_key);
+    my $t_hash = $self->get($TEMPLATE);
 
     # log template string
     my $log_str = $t_hash->{'TEMPLATE'};
@@ -443,8 +444,8 @@ The defauilt log items are "TEMPLATE", "DATE", "LEVEL" and "MESSAGE". It is able
 You can modify the log template like this.
 
   $logger->set('date_format', 'dd/mm/yy hh:mi:ss');
-  $logger->set('template', 'HOSTNAME', $hostname);
-  $logger->set('template', 'TEMPLATE', 'HOSTNAME - DATE (LEVEL) MESSAGE');
+  $logger->set($Log::Facile::TEMPLATE, 'HOSTNAME', $hostname);
+  $logger->set($Log::Facile::TEMPLATE, 'TEMPLATE', 'HOSTNAME - DATE (LEVEL) MESSAGE');
 
   $logger->info('template changed.');
 
@@ -488,7 +489,7 @@ The getter. You will be croaked if arg key has not been defined.
 
 The available items are "log_file", "level_debug", "level_info", "level_error", "level_warn", "level_fatal", "swap_dir", "date_format" and "debug_flag".
 
-=item get('template', I<$template_key>)
+=item get($Log::Facile::TEMPLATE, I<$template_key>)
 
 The getter of log template items. You will be croaked if I<$template_key> has not been defined.
 
@@ -500,7 +501,7 @@ The setter. You will be croaked if arg key has not been defined.
 
 The available items are "log_file", "level_debug", "level_info", "level_error", "level_warn", "level_fatal", "swap_dir", "date_format" and "debug_flag".
 
-=item set('template', I<$template_key>, I<$value>)
+=item set($Log::Facile::TEMPLATE, I<$template_key>, I<$value>)
 
 The setter of log template items. This accessor accepts value as a new item for log template if I<$template_key> has not been defined.
 

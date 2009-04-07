@@ -37,3 +37,7 @@ Revision history for Perl extension Log::Facile.
 	- pod edit (Methods)
 	- test module bug fix (Log-Facile-swap-fail-001.t)
 
+1.03  Wed Apr  8 02:43:41 JST 2009
+	- make 'template item accessor arg 0' constant
+	- edit test modules
+

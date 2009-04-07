@@ -10,10 +10,10 @@ ok unlink $log_file or croak $! if -f $log_file;
 ok my $logger = Log::Facile->new($log_file);
 
 # normal pattern
-is $logger->get('template', 'TEMPLATE'), 'DATE [LEVEL] MESSAGE';
-is $logger->get('template', 'DATE'), undef;
-is $logger->get('template', 'LEVEL'), undef;
-is $logger->get('template', 'MESSAGE'), undef;
+is $logger->get($Log::Facile::TEMPLATE, 'TEMPLATE'), 'DATE [LEVEL] MESSAGE';
+is $logger->get($Log::Facile::TEMPLATE, 'DATE'), undef;
+is $logger->get($Log::Facile::TEMPLATE, 'LEVEL'), undef;
+is $logger->get($Log::Facile::TEMPLATE, 'MESSAGE'), undef;
 
 ok $logger->debug('debug off');
 ok $logger->set('debug_flag', 1);
@@ -42,17 +42,17 @@ while (<$io>) {
 }
 ok close $io or warn 'file close error - '.$!;
 
-is $logger->get('template', 'TEMPLATE'), 'DATE [LEVEL] MESSAGE';
-is $logger->get('template', 'DATE'), undef;
-is $logger->get('template', 'LEVEL'), undef;
-is $logger->get('template', 'MESSAGE'), undef;
+is $logger->get($Log::Facile::TEMPLATE, 'TEMPLATE'), 'DATE [LEVEL] MESSAGE';
+is $logger->get($Log::Facile::TEMPLATE, 'DATE'), undef;
+is $logger->get($Log::Facile::TEMPLATE, 'LEVEL'), undef;
+is $logger->get($Log::Facile::TEMPLATE, 'MESSAGE'), undef;
 
 ok unlink $log_file or croak $! if -f $log_file;
 
 # config template
-ok $logger->set('template', 'COMMON_VALUE', 'LOVE');
-ok $logger->set('template', 'TEMPLATE', 'DATE (LEVEL) MESSAGE with COMMON_VALUE');
-is $logger->get('template', 'TEMPLATE'), 'DATE (LEVEL) MESSAGE with COMMON_VALUE';
+ok $logger->set($Log::Facile::TEMPLATE, 'COMMON_VALUE', 'LOVE');
+ok $logger->set($Log::Facile::TEMPLATE, 'TEMPLATE', 'DATE (LEVEL) MESSAGE with COMMON_VALUE');
+is $logger->get($Log::Facile::TEMPLATE, 'TEMPLATE'), 'DATE (LEVEL) MESSAGE with COMMON_VALUE';
 
 ok $logger->set('debug_flag', 1);
 ok $logger->debug("debug on");

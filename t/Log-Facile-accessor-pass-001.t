@@ -30,17 +30,17 @@ is $logger->get('level_fatal'), 'FTL';
 ok $logger->set('date_format', 'yyyymmdd');
 is $logger->get('date_format'), 'yyyymmdd';
 
-ok $logger->set('template', 'DATE', 'aaa');
-is $logger->get('template', 'DATE'), 'aaa';
+ok $logger->set($Log::Facile::TEMPLATE, 'DATE', 'aaa');
+is $logger->get($Log::Facile::TEMPLATE, 'DATE'), 'aaa';
 
-ok $logger->set('template', 'MESSAGE', 'something');
-is $logger->get('template', 'MESSAGE'), 'something';
+ok $logger->set($Log::Facile::TEMPLATE, 'MESSAGE', 'something');
+is $logger->get($Log::Facile::TEMPLATE, 'MESSAGE'), 'something';
 
-ok $logger->set('template', 'LEVEL', 'CONST');
-is $logger->get('template', 'LEVEL'), 'CONST';
+ok $logger->set($Log::Facile::TEMPLATE, 'LEVEL', 'CONST');
+is $logger->get($Log::Facile::TEMPLATE, 'LEVEL'), 'CONST';
 
-ok $logger->set('template', 'NEW_ONE', 'new');
-is $logger->get('template', 'NEW_ONE'), 'new';
+ok $logger->set($Log::Facile::TEMPLATE, 'NEW_ONE', 'new');
+is $logger->get($Log::Facile::TEMPLATE, 'NEW_ONE'), 'new';
 
 ok unlink $log_file or croak $! if -f $log_file;
 __END__
